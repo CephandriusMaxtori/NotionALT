@@ -6,13 +6,7 @@ import {
   Zap, 
   X, 
   Plus, 
-  Trash2, 
-  CheckCircle2, 
-  Sparkles, 
-  Layers, 
-  ArrowRight, 
-  Tag, 
-  Calendar 
+  Trash2
 } from 'lucide-react';
 import { AutomationAction, AutomationTrigger } from '@/types';
 
@@ -71,161 +65,108 @@ export const AutomationModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-[#0d1322] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-        {/* Modal Header */}
-        <div className="p-4 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 select-text">
+      <div className="w-full max-w-xl bg-[#1e1e1e] border border-[#333333] rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-[#2a2a2a] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
-              <Zap className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
-                Butler Visual Automations
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded">
-                  No-Code
-                </span>
-              </h2>
-              <p className="text-xs text-slate-400">
-                Trigger automated workflows when cards move, properties change, or buttons are clicked.
-              </p>
-            </div>
+            <Zap className="w-4 h-4 text-[#999999]" />
+            <h2 className="text-sm font-medium text-[#ebebeb]">Automations</h2>
           </div>
           <button
             onClick={() => setAutomationModalOpen(false)}
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition"
+            className="p-1 hover:bg-[#282828] text-[#777777] hover:text-[#cccccc] rounded"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Rules Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Active Rules List */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              <span>Active Rules ({activeBoard.automations?.length || 0})</span>
-              {!isCreating && (
-                <button
-                  onClick={() => setIsCreating(true)}
-                  className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 font-medium normal-case"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  New Automation
-                </button>
-              )}
-            </div>
-
-            {activeBoard.automations?.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-500 bg-slate-900/30 rounded-xl border border-dashed border-slate-800">
-                No automation rules configured yet. Create one below to automate card transitions!
-              </div>
-            ) : (
-              activeBoard.automations?.map((rule) => (
-                <div
-                  key={rule.id}
-                  className={`p-3.5 rounded-xl border transition ${
-                    rule.enabled
-                      ? 'bg-slate-900/60 border-slate-700/80 shadow-sm'
-                      : 'bg-slate-900/20 border-slate-800 opacity-60'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-semibold text-slate-200">{rule.name}</h4>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${
-                            rule.enabled
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {rule.enabled ? 'ACTIVE' : 'PAUSED'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400">{rule.description}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleAutomationRule(rule.id)}
-                        className={`text-xs px-2.5 py-1 rounded-lg font-medium transition ${
-                          rule.enabled
-                            ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {rule.enabled ? 'Disable' : 'Enable'}
-                      </button>
-
-                      <button
-                        onClick={() => deleteAutomationRule(rule.id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 transition"
-                        title="Delete rule"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
+        {/* Rules */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex items-center justify-between text-xs text-[#777777]">
+            <span>Rules ({activeBoard.automations?.length || 0})</span>
+            {!isCreating && (
+              <button
+                onClick={() => setIsCreating(true)}
+                className="flex items-center gap-1 text-xs text-[#2383e2] hover:text-[#1a73cb]"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add rule
+              </button>
             )}
           </div>
 
-          {/* New Rule Builder Form */}
+          <div className="space-y-1.5">
+            {activeBoard.automations?.map((rule) => (
+              <div
+                key={rule.id}
+                className={`p-2.5 rounded border text-xs flex items-center justify-between ${
+                  rule.enabled
+                    ? 'bg-[#242424] border-[#303030]'
+                    : 'bg-[#1c1c1c] border-[#262626] opacity-50'
+                }`}
+              >
+                <div>
+                  <div className="font-medium text-[#ebebeb]">{rule.name}</div>
+                  <div className="text-[11px] text-[#777777]">{rule.description}</div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleAutomationRule(rule.id)}
+                    className="text-[11px] px-2 py-0.5 rounded bg-[#2c2c2c] hover:bg-[#353535] text-[#cccccc]"
+                  >
+                    {rule.enabled ? 'Enabled' : 'Disabled'}
+                  </button>
+
+                  <button
+                    onClick={() => deleteAutomationRule(rule.id)}
+                    className="p-1 text-[#666666] hover:text-[#e07575]"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Builder */}
           {isCreating && (
             <form
               onSubmit={handleCreateRule}
-              className="p-4 bg-slate-900/80 border border-amber-500/40 rounded-2xl shadow-xl space-y-4"
+              className="p-3 bg-[#242424] border border-[#383838] rounded-lg space-y-3 text-xs"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Rule Builder
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsCreating(false)}
-                  className="text-xs text-slate-400 hover:text-slate-200"
-                >
-                  Cancel
-                </button>
-              </div>
-
               <div>
-                <label className="block text-xs text-slate-300 mb-1">Rule Name</label>
+                <label className="block text-[#888888] mb-1 text-[11px]">Rule Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Move to Review on QA Pass"
+                  placeholder="e.g. Move to review on pass"
                   value={ruleName}
                   onChange={(e) => setRuleName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#181818] border border-[#353535] rounded px-2.5 py-1 text-xs text-[#ebebeb] focus:outline-none focus:border-[#555555]"
                   required
                 />
               </div>
 
               {/* Trigger */}
-              <div className="space-y-2 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase">
-                  WHEN (Trigger)
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] text-[#777777]">Trigger</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   <select
                     value={triggerType}
                     onChange={(e) => setTriggerType(e.target.value as any)}
-                    className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                    className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                   >
-                    <option value="card_moved_to_column">Card is moved to column</option>
-                    <option value="checklist_all_completed">All checklist items are completed</option>
-                    <option value="button_clicked">Card action button is clicked</option>
+                    <option value="card_moved_to_column">Card moved to column</option>
+                    <option value="checklist_all_completed">Checklist completed</option>
+                    <option value="button_clicked">Button clicked</option>
                   </select>
 
                   {triggerType === 'card_moved_to_column' && (
                     <select
                       value={triggerColId}
                       onChange={(e) => setTriggerColId(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                      className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                     >
                       {activeBoard.columns.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -238,38 +179,36 @@ export const AutomationModal: React.FC = () => {
                   {triggerType === 'button_clicked' && (
                     <input
                       type="text"
-                      placeholder="Button Name (e.g. Request QA)"
+                      placeholder="Button label"
                       value={triggerButtonLabel}
                       onChange={(e) => setTriggerButtonLabel(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                      className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                     />
                   )}
                 </div>
               </div>
 
               {/* Action */}
-              <div className="space-y-2 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase">
-                  THEN (Action)
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] text-[#777777]">Action</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   <select
                     value={actionType}
                     onChange={(e) => setActionType(e.target.value as any)}
-                    className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                    className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                   >
-                    <option value="set_completed_date">Set Completed Date to NOW()</option>
+                    <option value="set_completed_date">Set completion date to NOW</option>
                     <option value="mark_checklist_done">Check all checklist items</option>
-                    <option value="set_priority">Set Priority</option>
-                    <option value="add_tag">Add Tag</option>
-                    <option value="move_card">Move Card to Column</option>
+                    <option value="set_priority">Set priority</option>
+                    <option value="add_tag">Add tag</option>
+                    <option value="move_card">Move card to column</option>
                   </select>
 
                   {actionType === 'set_priority' && (
                     <select
                       value={actionTargetVal}
                       onChange={(e) => setActionTargetVal(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                      className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -281,10 +220,10 @@ export const AutomationModal: React.FC = () => {
                   {actionType === 'add_tag' && (
                     <input
                       type="text"
-                      placeholder="Tag name (e.g. Urgent)"
+                      placeholder="Tag name"
                       value={actionTargetVal}
                       onChange={(e) => setActionTargetVal(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                      className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                     />
                   )}
 
@@ -292,7 +231,7 @@ export const AutomationModal: React.FC = () => {
                     <select
                       value={actionTargetVal}
                       onChange={(e) => setActionTargetVal(e.target.value)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200"
+                      className="bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb]"
                     >
                       {activeBoard.columns.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -304,19 +243,19 @@ export const AutomationModal: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-1.5 pt-1">
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200"
+                  className="px-2.5 py-1 text-xs text-[#777777] hover:text-[#cccccc]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs rounded-lg transition"
+                  className="px-3 py-1 bg-[#2383e2] hover:bg-[#1a73cb] text-white text-xs rounded font-normal"
                 >
-                  Save Automation
+                  Save rule
                 </button>
               </div>
             </form>
@@ -326,4 +265,3 @@ export const AutomationModal: React.FC = () => {
     </div>
   );
 };
-

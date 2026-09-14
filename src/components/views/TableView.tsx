@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { useWorkspaceStore } from '@/store/workspaceStore';
-import { CardNode } from '@/types';
-import { Plus, Calendar, Tag, AlertCircle, CheckSquare, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const TableView: React.FC = () => {
@@ -25,26 +24,26 @@ export const TableView: React.FC = () => {
   const handleCreateInFirstCol = () => {
     const defaultCol = activeBoard.columns[0];
     if (defaultCol) {
-      createCard(defaultCol.id, 'New Table Entry');
+      createCard(defaultCol.id, 'New task');
     }
   };
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="bg-[#0e1424] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div className="flex-1 overflow-auto p-4">
+      <div className="bg-[#1e1e1e] border border-[#2d2d2d] rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-slate-900/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-              <th className="p-3 w-1/3">Title</th>
-              <th className="p-3 w-36">Status</th>
-              <th className="p-3 w-28">Priority</th>
-              <th className="p-3 w-32">Due Date</th>
-              <th className="p-3 w-40">Assignees</th>
-              <th className="p-3">Tags</th>
-              <th className="p-3 w-28 text-center">Progress</th>
+            <tr className="bg-[#181818] border-b border-[#2b2b2b] text-[#777777] font-medium text-[11px]">
+              <th className="px-3 py-2 w-1/3">Name</th>
+              <th className="px-3 py-2 w-32">Status</th>
+              <th className="px-3 py-2 w-28">Priority</th>
+              <th className="px-3 py-2 w-28">Date</th>
+              <th className="px-3 py-2 w-36">Assignee</th>
+              <th className="px-3 py-2">Tags</th>
+              <th className="px-3 py-2 w-24 text-right">Progress</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-[#262626]">
             {allCards.map((card) => {
               const todos = card.blocks.filter((b) => b.type === 'todo');
               const completedTodos = todos.filter((b) => b.checked).length;
@@ -55,63 +54,50 @@ export const TableView: React.FC = () => {
                 <tr
                   key={card.id}
                   onClick={() => setActiveCard(card.id)}
-                  className="hover:bg-slate-800/40 cursor-pointer transition group"
+                  className="hover:bg-[#252525] cursor-pointer transition text-[#cccccc]"
                 >
-                  {/* Title */}
-                  <td className="p-3 font-medium text-slate-200 group-hover:text-indigo-300">
-                    <div className="flex items-center gap-2">
-                      {card.properties.cover_color && (
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: card.properties.cover_color }}
-                        />
-                      )}
-                      <span>{card.title}</span>
-                    </div>
+                  <td className="px-3 py-2 text-[#ebebeb] font-normal">
+                    {card.title}
                   </td>
 
-                  {/* Status Dropdown */}
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={card.properties.status || ''}
                       onChange={(e) => updateCardProperties(card.id, { status: e.target.value })}
-                      className="bg-slate-900 border border-slate-700/80 rounded px-2 py-1 text-slate-200 text-xs w-full focus:outline-none"
+                      className="bg-transparent hover:bg-[#282828] rounded px-1.5 py-0.5 text-xs text-[#cccccc] focus:outline-none w-full"
                     >
                       {activeBoard.columns.map((col) => (
-                        <option key={col.id} value={col.title}>
+                        <option key={col.id} value={col.title} className="bg-[#242424]">
                           {col.title}
                         </option>
                       ))}
                     </select>
                   </td>
 
-                  {/* Priority */}
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={card.properties.priority || 'Medium'}
                       onChange={(e) => updateCardProperties(card.id, { priority: e.target.value as any })}
-                      className="bg-slate-900 border border-slate-700/80 rounded px-2 py-1 text-slate-200 text-xs w-full focus:outline-none"
+                      className="bg-transparent hover:bg-[#282828] rounded px-1.5 py-0.5 text-xs text-[#cccccc] focus:outline-none w-full"
                     >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical</option>
+                      <option value="Low" className="bg-[#242424]">Low</option>
+                      <option value="Medium" className="bg-[#242424]">Medium</option>
+                      <option value="High" className="bg-[#242424]">High</option>
+                      <option value="Critical" className="bg-[#242424]">Critical</option>
                     </select>
                   </td>
 
-                  {/* Due Date */}
-                  <td className="p-3 text-slate-400">
-                    {card.properties.due_date ? format(new Date(card.properties.due_date), 'MMM d, yyyy') : '-'}
+                  <td className="px-3 py-2 text-[#888888]">
+                    {card.properties.due_date ? format(new Date(card.properties.due_date), 'MMM d') : '-'}
                   </td>
 
-                  {/* Assignees */}
-                  <td className="p-3">
-                    <div className="flex -space-x-1.5 overflow-hidden">
+                  <td className="px-3 py-2">
+                    <div className="flex -space-x-1 overflow-hidden">
                       {card.properties.assignees?.map((a, i) => (
                         <div
                           key={i}
                           title={a}
-                          className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-[9px] font-bold ring-1 ring-slate-900"
+                          className="w-4 h-4 rounded-full bg-[#3a3a3a] text-[#cccccc] flex items-center justify-center text-[9px]"
                         >
                           {a.charAt(0)}
                         </div>
@@ -119,26 +105,18 @@ export const TableView: React.FC = () => {
                     </div>
                   </td>
 
-                  {/* Tags */}
-                  <td className="p-3">
+                  <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
                       {card.properties.tags?.map((t, i) => (
-                        <span key={i} className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">
+                        <span key={i} className="px-1 py-0.2 rounded bg-[#2a2a2a] text-[#888888] text-[10px]">
                           {t}
                         </span>
                       ))}
                     </div>
                   </td>
 
-                  {/* Progress Rollup */}
-                  <td className="p-3 text-center">
-                    {hasTodos ? (
-                      <span className="font-mono text-[11px] text-indigo-300">
-                        {progressPercent}%
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">-</span>
-                    )}
+                  <td className="px-3 py-2 text-right font-mono text-[11px] text-[#777777]">
+                    {hasTodos ? `${progressPercent}%` : '-'}
                   </td>
                 </tr>
               );
@@ -146,18 +124,16 @@ export const TableView: React.FC = () => {
           </tbody>
         </table>
 
-        {/* New Row Bar */}
-        <div className="p-2 bg-slate-900/40 border-t border-slate-800">
+        <div className="p-1.5 bg-[#181818] border-t border-[#282828]">
           <button
             onClick={handleCreateInFirstCol}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded hover:bg-slate-800/60 transition"
+            className="flex items-center gap-1 text-xs text-[#777777] hover:text-[#cccccc] px-2 py-1 rounded hover:bg-[#242424] transition"
           >
             <Plus className="w-3.5 h-3.5" />
-            New row
+            <span>New page</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
-

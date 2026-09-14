@@ -6,10 +6,6 @@ import { useWorkspaceStore } from '@/store/workspaceStore';
 import { 
   Calendar, 
   CheckSquare, 
-  User, 
-  FileText, 
-  Sparkles, 
-  Zap,
   AlignLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -28,11 +24,11 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
   const hasTodos = todos.length > 0;
   const progressPercent = hasTodos ? Math.round((completedTodos / todos.length) * 100) : 0;
 
-  const priorityColors: Record<string, string> = {
-    Low: 'bg-slate-700/60 text-slate-300 border-slate-600',
-    Medium: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
-    High: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    Critical: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+  const priorityStyles: Record<string, string> = {
+    Low: 'bg-[#2a2a2a] text-[#888888] border-[#383838]',
+    Medium: 'bg-[#2a3038] text-[#85b0d6] border-[#364352]',
+    High: 'bg-[#3b3225] text-[#d6a96b] border-[#52442e]',
+    Critical: 'bg-[#3b2525] text-[#e07575] border-[#573030]',
   };
 
   const hasDescriptionOrBlocks = card.blocks.length > 0 && card.blocks.some(b => b.content?.trim().length > 0);
@@ -46,26 +42,26 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
       style={{
         ...provided.draggableProps.style,
       }}
-      className={`group relative rounded-xl border bg-[#131b2e] p-3 transition-all cursor-pointer select-none ${
+      className={`group relative rounded-md border bg-[#232323] p-2.5 transition cursor-pointer select-none ${
         snapshot.isDragging
-          ? 'shadow-2xl shadow-indigo-500/20 border-indigo-500 rotate-1 scale-[1.02] z-50'
-          : 'border-slate-800/80 hover:border-slate-700 hover:shadow-lg hover:shadow-black/40 hover:-translate-y-0.5'
+          ? 'shadow-lg border-[#555555] rotate-0.5 z-50'
+          : 'border-[#303030] hover:border-[#404040] hover:bg-[#282828]'
       }`}
     >
-      {/* Cover Color Strip / Header */}
+      {/* Cover Color Strip */}
       {card.properties.cover_color && (
         <div
-          className="h-2 -mx-3 -mt-3 mb-2.5 rounded-t-xl"
+          className="h-1 -mx-2.5 -mt-2.5 mb-2 rounded-t-md"
           style={{ backgroundColor: card.properties.cover_color }}
         />
       )}
 
       {/* Tags & Priority Chips */}
-      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+      <div className="flex flex-wrap items-center gap-1 mb-1.5">
         {card.properties.priority && (
           <span
-            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-              priorityColors[card.properties.priority] || 'bg-slate-800 text-slate-300 border-slate-700'
+            className={`text-[10px] px-1.5 py-0.2 rounded border font-normal ${
+              priorityStyles[card.properties.priority] || 'bg-[#2a2a2a] text-[#888888] border-[#383838]'
             }`}
           >
             {card.properties.priority}
@@ -75,7 +71,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
         {card.properties.tags?.map((tag, idx) => (
           <span
             key={idx}
-            className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700/60"
+            className="text-[10px] px-1.5 py-0.2 rounded bg-[#2a2a2a] text-[#999999] border border-[#353535]"
           >
             {tag}
           </span>
@@ -83,31 +79,31 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
       </div>
 
       {/* Title */}
-      <h3 className="text-xs font-semibold text-slate-100 leading-snug mb-1 group-hover:text-indigo-300 transition-colors">
+      <h3 className="text-[13px] font-normal text-[#ebebeb] leading-snug mb-1">
         {card.title}
       </h3>
 
-      {/* Optional short description */}
+      {/* Summary */}
       {card.description && (
-        <p className="text-[11px] text-slate-400 line-clamp-2 mb-2 leading-relaxed">
+        <p className="text-[11px] text-[#888888] line-clamp-2 mb-1.5 leading-relaxed">
           {card.description}
         </p>
       )}
 
-      {/* Progress Bar for Checklist Tasks */}
+      {/* Checklist Progress Bar */}
       {hasTodos && (
-        <div className="mb-2.5 mt-1 space-y-1">
-          <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+        <div className="mb-2 mt-1 space-y-1">
+          <div className="flex justify-between items-center text-[10px] text-[#777777] font-mono">
             <span className="flex items-center gap-1">
-              <CheckSquare className="w-3 h-3 text-slate-400" />
-              {completedTodos}/{todos.length} tasks
+              <CheckSquare className="w-3 h-3 text-[#666666]" />
+              {completedTodos}/{todos.length}
             </span>
             <span>{progressPercent}%</span>
           </div>
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-1 bg-[#2e2e2e] rounded-full overflow-hidden">
             <div
-              className={`h-full transition-all duration-300 ${
-                progressPercent === 100 ? 'bg-emerald-500' : 'bg-indigo-500'
+              className={`h-full transition-all duration-200 ${
+                progressPercent === 100 ? 'bg-[#3fb950]' : 'bg-[#2383e2]'
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -115,31 +111,31 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
         </div>
       )}
 
-      {/* Bottom Metadata Badges */}
-      <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-slate-800/60">
+      {/* Footer Metadata */}
+      <div className="flex items-center justify-between pt-1 text-[11px] text-[#777777]">
         <div className="flex items-center gap-2">
           {card.properties.due_date && (
-            <span className="flex items-center gap-1 text-[10px] bg-slate-800/70 px-1.5 py-0.5 rounded text-slate-300">
-              <Calendar className="w-3 h-3 text-indigo-400" />
+            <span className="flex items-center gap-1 text-[10px] text-[#888888]">
+              <Calendar className="w-3 h-3 text-[#777777]" />
               {format(new Date(card.properties.due_date), 'MMM d')}
             </span>
           )}
 
           {hasDescriptionOrBlocks && (
-            <span title="Contains document content" className="hover:text-slate-200">
+            <span className="text-[#666666]">
               <AlignLeft className="w-3 h-3" />
             </span>
           )}
         </div>
 
-        {/* Assignees */}
+        {/* Assignees initials */}
         {card.properties.assignees && card.properties.assignees.length > 0 && (
-          <div className="flex -space-x-1.5 overflow-hidden">
+          <div className="flex -space-x-1 overflow-hidden">
             {card.properties.assignees.map((assignee, idx) => (
               <div
                 key={idx}
                 title={assignee}
-                className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-[9px] font-bold ring-1 ring-[#131b2e]"
+                className="w-4 h-4 rounded-full bg-[#3a3a3a] text-[#cccccc] flex items-center justify-center text-[9px] font-medium border border-[#232323]"
               >
                 {assignee.charAt(0).toUpperCase()}
               </div>
@@ -150,4 +146,3 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ card, provided, snapshot
     </div>
   );
 };
-

@@ -5,16 +5,12 @@ import { useWorkspaceStore } from '@/store/workspaceStore';
 import { 
   Plus, 
   Trash2, 
-  ChevronRight, 
-  Layout, 
-  Sparkles, 
   Zap, 
-  Settings, 
   Download, 
   Upload, 
-  RefreshCw,
-  FolderKanban,
-  FileText
+  RotateCcw,
+  LayoutGrid,
+  ChevronDown
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -32,7 +28,7 @@ export const Sidebar: React.FC = () => {
 
   const [isNewBoardOpen, setIsNewBoardOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const [newIcon, setNewIcon] = useState('📋');
+  const [newIcon, setNewIcon] = useState('📄');
 
   const handleCreateBoard = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,11 +43,11 @@ export const Sidebar: React.FC = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workspace, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `notion-board-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    downloadAnchor.setAttribute("download", `workspace-backup-${new Date().toISOString().slice(0, 10)}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    setToastMessage("💾 Workspace exported successfully!");
+    setToastMessage("Workspace exported");
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,12 +59,10 @@ export const Sidebar: React.FC = () => {
           const parsed = JSON.parse(event.target?.result as string);
           if (parsed && Array.isArray(parsed.boards)) {
             importWorkspaceData(parsed);
-            setToastMessage("✅ Workspace imported successfully!");
-          } else {
-            alert("Invalid workspace backup file structure.");
+            setToastMessage("Workspace loaded");
           }
-        } catch (err) {
-          alert("Error parsing JSON file.");
+        } catch {
+          alert("Could not load workspace JSON");
         }
       };
       reader.readAsText(file);
@@ -76,32 +70,27 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 h-screen bg-[#0d1322] border-r border-slate-800/80 flex flex-col shrink-0 select-none">
-      {/* Workspace Header */}
-      <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/20">
-            NB
+    <aside className="w-60 h-screen bg-[#1b1b1b] border-r border-[#2d2d2d] flex flex-col shrink-0 select-none text-[13px] text-[#999999]">
+      {/* Workspace Switcher Header */}
+      <div className="px-3.5 py-3 border-b border-[#282828] flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-5 h-5 rounded bg-[#2e2e2e] border border-[#383838] flex items-center justify-center text-[11px] text-[#e0e0e0] font-semibold">
+            N
           </div>
-          <div>
-            <h1 className="font-semibold text-sm text-slate-100 leading-tight">Notion Board</h1>
-            <p className="text-[11px] text-slate-400">Hybrid Workspace</p>
-          </div>
+          <span className="font-medium text-[#e3e3e3] truncate text-[13px]">
+            {workspace.title || 'Workspace'}
+          </span>
         </div>
       </div>
 
-      {/* Navigation Trees */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {/* Boards Section */}
+      {/* Boards / Navigation List */}
+      <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
         <div>
-          <div className="flex items-center justify-between px-2 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            <span className="flex items-center gap-1.5">
-              <FolderKanban className="w-3.5 h-3.5 text-indigo-400" />
-              Boards & Canvases
-            </span>
+          <div className="flex items-center justify-between px-2 mb-1 text-[11px] font-medium text-[#777777]">
+            <span>BOARDS</span>
             <button
               onClick={() => setIsNewBoardOpen(!isNewBoardOpen)}
-              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 transition"
+              className="p-0.5 hover:bg-[#282828] rounded text-[#777777] hover:text-[#d4d4d4] transition"
               title="Add Board"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -109,35 +98,35 @@ export const Sidebar: React.FC = () => {
           </div>
 
           {isNewBoardOpen && (
-            <form onSubmit={handleCreateBoard} className="mb-3 p-2 bg-slate-800/70 rounded-lg border border-slate-700/60 space-y-2">
-              <div className="flex gap-1.5">
+            <form onSubmit={handleCreateBoard} className="mb-2 p-1.5 bg-[#242424] rounded border border-[#333333] space-y-1.5">
+              <div className="flex gap-1">
                 <input
                   type="text"
-                  placeholder="⚡"
+                  placeholder="📄"
                   value={newIcon}
                   onChange={(e) => setNewIcon(e.target.value)}
-                  className="w-8 text-center bg-slate-900 border border-slate-700 rounded text-xs py-1"
+                  className="w-7 text-center bg-[#181818] border border-[#383838] rounded text-xs py-1 text-[#e0e0e0]"
                 />
                 <input
                   type="text"
-                  placeholder="Board Title..."
+                  placeholder="Board name..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   autoFocus
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded text-xs px-2 py-1 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="flex-1 bg-[#181818] border border-[#383838] rounded text-xs px-2 py-1 text-[#e0e0e0] focus:outline-none focus:border-[#555555]"
                 />
               </div>
-              <div className="flex justify-end gap-1.5">
+              <div className="flex justify-end gap-1.5 pt-0.5">
                 <button
                   type="button"
                   onClick={() => setIsNewBoardOpen(false)}
-                  className="text-[11px] px-2 py-0.5 text-slate-400 hover:text-slate-200"
+                  className="text-[11px] px-2 py-0.5 text-[#888888] hover:text-[#cccccc]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="text-[11px] px-2.5 py-0.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-medium"
+                  className="text-[11px] px-2 py-0.5 bg-[#2383e2] text-white rounded font-normal hover:bg-[#1a73cb]"
                 >
                   Create
                 </button>
@@ -145,7 +134,7 @@ export const Sidebar: React.FC = () => {
             </form>
           )}
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {workspace.boards.map((board) => {
               const isActive = board.id === activeBoardId;
               const cardCount = Object.keys(board.cards || {}).length;
@@ -154,29 +143,29 @@ export const Sidebar: React.FC = () => {
                 <div
                   key={board.id}
                   onClick={() => setActiveBoard(board.id)}
-                  className={`group flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium cursor-pointer transition ${
+                  className={`group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors ${
                     isActive
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                      : 'text-slate-300 hover:bg-slate-800/60 hover:text-slate-100'
+                      ? 'bg-[#2a2a2a] text-[#ffffff]'
+                      : 'hover:bg-[#232323] text-[#a0a0a0] hover:text-[#e0e0e0]'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm">{board.icon || '📋'}</span>
+                    <span className="text-xs">{board.icon || '📄'}</span>
                     <span className="truncate">{board.title}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0 opacity-80 group-hover:opacity-100">
-                    <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono">
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-[11px] text-[#666666] font-mono group-hover:hidden">
                       {cardCount}
                     </span>
                     {workspace.boards.length > 1 && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm(`Delete board "${board.title}"?`)) {
+                          if (confirm(`Delete "${board.title}"?`)) {
                             deleteBoard(board.id);
                           }
                         }}
-                        className="hidden group-hover:block p-1 hover:text-rose-400 text-slate-500 rounded"
+                        className="hidden group-hover:block p-0.5 text-[#777777] hover:text-[#ff6b6b] rounded"
                         title="Delete Board"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -189,65 +178,42 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* Butler Automations Shortcut */}
+        {/* Automations */}
         <div>
-          <div className="px-2 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            Butler Automation
+          <div className="px-2 mb-1 text-[11px] font-medium text-[#777777]">
+            AUTOMATION
           </div>
           <button
             onClick={() => setAutomationModalOpen(true)}
-            className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition group"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[#232323] text-[#a0a0a0] hover:text-[#e0e0e0] text-left transition"
           >
-            <span className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
-              Automations & Rules
-            </span>
-            <ChevronRight className="w-3.5 h-3.5 text-amber-400/70" />
+            <Zap className="w-3.5 h-3.5 text-[#b0b0b0]" />
+            <span>Rules & Triggers</span>
           </button>
-        </div>
-
-        {/* Quick Tips */}
-        <div className="p-3 bg-indigo-950/30 border border-indigo-500/20 rounded-xl space-y-1.5 text-xs text-slate-300">
-          <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5" />
-            Notion + Trello Best Of Both
-          </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Drag cards across columns, click any card to compose rich block notes, and set Butler triggers to automate tasks!
-          </p>
         </div>
       </div>
 
-      {/* Workspace Footer Actions */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-900/40 space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-          <span className="flex items-center gap-1">
-            <Settings className="w-3.5 h-3.5" />
-            Data Options
-          </span>
-          <button
-            onClick={resetToDefaults}
-            className="hover:text-rose-400 transition"
-            title="Reset to sample demo data"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {/* Footer controls */}
+      <div className="p-2.5 border-t border-[#282828] flex items-center justify-between text-xs text-[#777777]">
+        <button
+          onClick={resetToDefaults}
+          className="p-1 hover:bg-[#262626] rounded text-[#777777] hover:text-[#bbbbbb] transition flex items-center gap-1 text-[11px]"
+          title="Reset default data"
+        >
+          <RotateCcw className="w-3 h-3" />
+          <span>Reset</span>
+        </button>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={handleExport}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-800 hover:bg-slate-700/80 text-slate-300 text-xs rounded border border-slate-700 transition"
-            title="Export JSON backup"
+            className="p-1 hover:bg-[#262626] rounded text-[#777777] hover:text-[#bbbbbb] transition"
+            title="Export JSON"
           >
-            <Download className="w-3 h-3" />
-            Export
+            <Download className="w-3.5 h-3.5" />
           </button>
-
-          <label className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-800 hover:bg-slate-700/80 text-slate-300 text-xs rounded border border-slate-700 transition cursor-pointer">
-            <Upload className="w-3 h-3" />
-            Import
+          <label className="p-1 hover:bg-[#262626] rounded text-[#777777] hover:text-[#bbbbbb] transition cursor-pointer" title="Import JSON">
+            <Upload className="w-3.5 h-3.5" />
             <input type="file" accept=".json" onChange={handleImport} className="hidden" />
           </label>
         </div>
@@ -255,4 +221,3 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
-

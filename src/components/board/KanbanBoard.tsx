@@ -15,8 +15,8 @@ export const KanbanBoard: React.FC = () => {
 
   if (!activeBoard) {
     return (
-      <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
-        Select or create a board to get started
+      <div className="flex-1 flex items-center justify-center text-[#666666] text-xs">
+        No active board
       </div>
     );
   }
@@ -40,7 +40,7 @@ export const KanbanBoard: React.FC = () => {
   const handleCreateColumn = (e: React.FormEvent) => {
     e.preventDefault();
     if (newColTitle.trim()) {
-      const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
+      const colors = ['#64748b', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
       const randomColor = colors[activeBoard.columns.length % colors.length];
       addColumn(newColTitle.trim(), randomColor);
       setNewColTitle('');
@@ -49,11 +49,10 @@ export const KanbanBoard: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden p-6">
+    <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex items-start gap-4 h-full">
+        <div className="flex items-start gap-3 h-full">
           {activeBoard.columns.map((column) => {
-            // Filter cards if search query is active
             const columnCards = column.card_ids
               .map((id) => activeBoard.cards[id])
               .filter(Boolean)
@@ -77,32 +76,32 @@ export const KanbanBoard: React.FC = () => {
             );
           })}
 
-          {/* Add New Column Container */}
-          <div className="w-72 shrink-0">
+          {/* Add Column */}
+          <div className="w-64 shrink-0">
             {isAddingCol ? (
               <form
                 onSubmit={handleCreateColumn}
-                className="p-3 bg-[#0e1424] border border-slate-700/80 rounded-2xl shadow-lg space-y-2.5"
+                className="p-2 bg-[#1e1e1e] border border-[#333333] rounded-lg space-y-2"
               >
                 <input
                   type="text"
-                  placeholder="Enter column name..."
+                  placeholder="Column name..."
                   value={newColTitle}
                   onChange={(e) => setNewColTitle(e.target.value)}
                   autoFocus
-                  className="w-full bg-[#131b2e] border border-slate-700 rounded-lg p-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#181818] border border-[#353535] rounded p-1.5 text-xs text-[#ebebeb] placeholder:text-[#666666] focus:outline-none focus:border-[#555555]"
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="submit"
-                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition"
+                    className="px-2.5 py-1 bg-[#2383e2] hover:bg-[#1a73cb] text-white rounded text-xs font-normal"
                   >
-                    Add Column
+                    Add List
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddingCol(false)}
-                    className="text-xs text-slate-400 hover:text-slate-200 px-2 py-1.5"
+                    className="text-xs text-[#777777] hover:text-[#cccccc] px-2 py-0.5"
                   >
                     Cancel
                   </button>
@@ -111,10 +110,10 @@ export const KanbanBoard: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsAddingCol(true)}
-                className="w-full py-3 px-4 border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/30 hover:bg-slate-900/60 rounded-2xl flex items-center justify-center gap-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
+                className="w-full py-2 px-3 border border-[#2d2d2d] hover:border-[#383838] bg-[#1a1a1a] hover:bg-[#202020] rounded-lg flex items-center gap-2 text-xs font-normal text-[#888888] hover:text-[#cccccc] transition"
               >
-                <Plus className="w-4 h-4 text-slate-400" />
-                Add another list
+                <Plus className="w-3.5 h-3.5 text-[#777777]" />
+                <span>Add a list</span>
               </button>
             )}
           </div>
@@ -123,4 +122,3 @@ export const KanbanBoard: React.FC = () => {
     </div>
   );
 };
-
