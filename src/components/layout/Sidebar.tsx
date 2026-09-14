@@ -9,12 +9,14 @@ import {
   Download, 
   Upload, 
   RotateCcw,
-  LayoutGrid,
-  ChevronDown
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const { 
+    currentUser,
+    logout,
     workspace, 
     activeBoardId, 
     setActiveBoard, 
@@ -71,16 +73,29 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-60 h-screen bg-[#1b1b1b] border-r border-[#2d2d2d] flex flex-col shrink-0 select-none text-[13px] text-[#999999]">
-      {/* Workspace Switcher Header */}
+      {/* User Profile / Workspace Header */}
       <div className="px-3.5 py-3 border-b border-[#282828] flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-5 h-5 rounded bg-[#2e2e2e] border border-[#383838] flex items-center justify-center text-[11px] text-[#e0e0e0] font-semibold">
-            N
+            {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <span className="font-medium text-[#e3e3e3] truncate text-[13px]">
-            {workspace.title || 'Workspace'}
-          </span>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-[#e3e3e3] truncate text-[13px]">
+              {currentUser?.name || 'My Workspace'}
+            </div>
+            <div className="text-[10px] text-[#666666] truncate font-mono">
+              {currentUser?.email || ''}
+            </div>
+          </div>
         </div>
+
+        <button
+          onClick={logout}
+          className="p-1 hover:bg-[#282828] text-[#777777] hover:text-[#e07575] rounded transition"
+          title="Sign out"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Boards / Navigation List */}

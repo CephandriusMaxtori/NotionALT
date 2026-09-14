@@ -2,6 +2,15 @@ export type NodeType = 'workspace' | 'document' | 'database' | 'board_column' | 
 
 export type PropertyType = 'text' | 'status' | 'priority' | 'date' | 'select' | 'multi_select' | 'member' | 'number' | 'checklist_progress';
 
+export interface UserAccount {
+  id: string;
+  email: string;
+  name: string;
+  password?: string;
+  avatarUrl?: string;
+  created_at: string;
+}
+
 export interface CardProperties {
   status?: string;
   priority?: 'Low' | 'Medium' | 'High' | 'Critical';
@@ -37,9 +46,9 @@ export interface ContentBlock {
   id: string;
   type: BlockType;
   content: string;
-  checked?: boolean; // for todo
-  language?: string; // for code
-  isOpen?: boolean; // for toggle
+  checked?: boolean;
+  language?: string;
+  isOpen?: boolean;
   calloutType?: 'info' | 'warning' | 'success' | 'tip';
   children?: ContentBlock[];
 }
@@ -101,10 +110,10 @@ export interface BoardNode {
 
 export interface WorkspaceNode {
   id: string;
+  user_id?: string;
   title: string;
   boards: BoardNode[];
   active_board_id: string;
 }
 
 export type ViewMode = 'board' | 'table' | 'list';
-

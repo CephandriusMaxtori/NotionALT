@@ -9,31 +9,39 @@ import { TableView } from '@/components/views/TableView';
 import { ListView } from '@/components/views/ListView';
 import { CardDrawer } from '@/components/card-drawer/CardDrawer';
 import { AutomationModal } from '@/components/automation/AutomationModal';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 export default function Home() {
-  const { viewMode, toastMessage } = useWorkspaceStore();
+  const { currentUser, viewMode, toastMessage } = useWorkspaceStore();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#191919] text-[#ebebeb] antialiased">
-      {/* Left Sidebar */}
-      <Sidebar />
+      {/* Authentication Gateway (Login & Registration) */}
+      {!currentUser ? (
+        <AuthModal />
+      ) : (
+        <>
+          {/* Left Sidebar */}
+          <Sidebar />
 
-      {/* Main Canvas Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#191919]">
-        <Header />
+          {/* Main Canvas Area */}
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#191919]">
+            <Header />
 
-        <main className="flex-1 flex flex-col overflow-hidden relative">
-          {viewMode === 'board' && <KanbanBoard />}
-          {viewMode === 'table' && <TableView />}
-          {viewMode === 'list' && <ListView />}
-        </main>
-      </div>
+            <main className="flex-1 flex flex-col overflow-hidden relative">
+              {viewMode === 'board' && <KanbanBoard />}
+              {viewMode === 'table' && <TableView />}
+              {viewMode === 'list' && <ListView />}
+            </main>
+          </div>
 
-      {/* Right Slide-over Card Canvas */}
-      <CardDrawer />
+          {/* Right Slide-over Card Canvas */}
+          <CardDrawer />
 
-      {/* Automations Modal */}
-      <AutomationModal />
+          {/* Automations Modal */}
+          <AutomationModal />
+        </>
+      )}
 
       {/* Subtle Toast */}
       {toastMessage && (

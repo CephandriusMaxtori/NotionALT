@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import { WorkspaceNode, BoardNode, CardNode, ContentBlock, ColumnNode, AutomationRule, ViewMode } from '@/types';
+import { WorkspaceNode, BoardNode, CardNode, ContentBlock, ColumnNode, AutomationRule, ViewMode, UserAccount } from '@/types';
 import { INITIAL_WORKSPACE } from '@/lib/seedData';
 import { evaluateAndRunAutomations } from '@/lib/automationEngine';
 
 interface WorkspaceState {
+  currentUser: UserAccount | null;
+  users: UserAccount[];
   workspace: WorkspaceNode;
   activeBoardId: string;
   activeCardId: string | null;
@@ -12,6 +14,11 @@ interface WorkspaceState {
   isAutomationModalOpen: boolean;
   isTemplateModalOpen: boolean;
   toastMessage: string | null;
+
+  // Auth Actions
+  login: (email: string, password?: string) => boolean;
+  register: (name: string, email: string, password?: string) => boolean;
+  logout: () => void;
 
   // Actions
   setActiveBoard: (boardId: string) => void;
@@ -56,18 +63,46 @@ interface WorkspaceState {
   importWorkspaceData: (data: WorkspaceNode) => void;
 }
 
-const STORAGE_KEY = 'notion_board_workspace_v1';
+const STORAGE_KEY = 'notion_board_workspace_v2';
+const USERS_STORAGE_KEY = 'notion_board_users_v2';
+const SESSION_KEY = 'notion_board_session_user_v2';
 
-const getInitialState = (): WorkspaceNode => {
+const DEFAULT_USERS: UserAccount[] = [
+  {
+    id: 'user-demo',
+    email: 'demo@notionboard.com',
+    name: 'Demo User',
+    password: 'password123',
+    created_at: new Date().toISOString()
+  }
+];
+
+const getStoredUsers = (): UserAccount[] => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(USERS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+  }
+  return DEFAULT_USERS;
+};
+
+const getStoredSession = (): UserAccount | null => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+  }
+  return null;
+};
+
+const getInitialWorkspace = (): WorkspaceNode => {
   if (typeof window !== 'undefined') {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to parse saved workspace', e);
-    }
+      if (saved) return JSON.parse(saved);
+    } catch {}
   }
   return INITIAL_WORKSPACE;
 };
@@ -76,21 +111,81 @@ const saveToLocalStorage = (workspace: WorkspaceNode) => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
-    } catch (e) {
-      console.error('Failed to save workspace', e);
-    }
+    } catch {}
+  }
+};
+
+const saveUsers = (users: UserAccount[]) => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    } catch {}
+  }
+};
+
+const saveSession = (user: UserAccount | null) => {
+  if (typeof window !== 'undefined') {
+    try {
+      if (user) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(SESSION_KEY);
+      }
+    } catch {}
   }
 };
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
-  workspace: getInitialState(),
-  activeBoardId: getInitialState().active_board_id || 'board-sprint',
+  currentUser: getStoredSession(),
+  users: getStoredUsers(),
+  workspace: getInitialWorkspace(),
+  activeBoardId: getInitialWorkspace().active_board_id || 'board-sprint',
   activeCardId: null,
   viewMode: 'board',
   searchQuery: '',
   isAutomationModalOpen: false,
   isTemplateModalOpen: false,
   toastMessage: null,
+
+  login: (email, password) => {
+    const users = get().users;
+    const found = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && (!password || u.password === password)
+    );
+    if (found) {
+      saveSession(found);
+      set({ currentUser: found });
+      get().setToastMessage(`Welcome back, ${found.name}`);
+      return true;
+    }
+    return false;
+  },
+
+  register: (name, email, password) => {
+    const users = get().users;
+    const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (exists) return false;
+
+    const newUser: UserAccount = {
+      id: `user-${Date.now()}`,
+      name,
+      email,
+      password,
+      created_at: new Date().toISOString()
+    };
+
+    const updatedUsers = [...users, newUser];
+    saveUsers(updatedUsers);
+    saveSession(newUser);
+    set({ users: updatedUsers, currentUser: newUser });
+    get().setToastMessage(`Account created for ${newUser.name}`);
+    return true;
+  },
+
+  logout: () => {
+    saveSession(null);
+    set({ currentUser: null, activeCardId: null });
+  },
 
   setActiveBoard: (boardId) => {
     set((state) => {
@@ -116,7 +211,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  createBoard: (title, description, icon = '📋') => {
+  createBoard: (title, description, icon = '📄') => {
     const id = `board-${Date.now()}`;
     const newBoard: BoardNode = {
       id,
@@ -131,16 +226,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         { id: `col-${Date.now()}-3`, title: 'Done', color: '#10b981', card_ids: [] }
       ],
       cards: {},
-      automations: [
-        {
-          id: `auto-${Date.now()}`,
-          name: 'Auto-Complete On Done',
-          description: 'Set completed timestamp when moved to Done',
-          enabled: true,
-          trigger: { type: 'card_moved_to_column', columnId: `col-${Date.now()}-3` },
-          actions: [{ id: `act-${Date.now()}`, type: 'set_completed_date' }]
-        }
-      ]
+      automations: []
     };
 
     set((state) => {
@@ -216,7 +302,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         cards: { ...activeBoard.cards, [cardId]: updatedCard }
       };
 
-      // Run Butler Automations if column changed
       let finalBoard = updatedBoard;
       if (sourceColId !== destColId) {
         const { newBoardState, executedRules } = evaluateAndRunAutomations(
@@ -227,7 +312,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         );
         finalBoard = newBoardState;
         if (executedRules.length > 0) {
-          get().setToastMessage(`⚡ Butler: Executed "${executedRules[0].ruleName}"`);
+          get().setToastMessage(`Executed: "${executedRules[0].ruleName}"`);
         }
       }
 
@@ -245,7 +330,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const newCard: CardNode = {
       id: cardId,
       column_id: columnId,
-      title: title.trim() || 'Untitled Card',
+      title: title.trim() || 'Untitled',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       properties: {
@@ -358,7 +443,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         cards: { ...activeBoard.cards, [cardId]: updatedCard }
       };
 
-      // Check property trigger automations (e.g. priority change)
       for (const [key, val] of Object.entries(properties)) {
         const { newBoardState, executedRules } = evaluateAndRunAutomations(
           updatedBoard,
@@ -368,7 +452,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         );
         updatedBoard = newBoardState;
         if (executedRules.length > 0) {
-          get().setToastMessage(`⚡ Butler: Executed "${executedRules[0].ruleName}"`);
+          get().setToastMessage(`Executed: "${executedRules[0].ruleName}"`);
         }
       }
 
@@ -433,7 +517,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         cards: { ...activeBoard.cards, [cardId]: updatedCard }
       };
 
-      // Check if all todos are now completed
       const todos = blocks.filter((b) => b.type === 'todo');
       if (todos.length > 0 && todos.every((t) => t.checked)) {
         const { newBoardState, executedRules } = evaluateAndRunAutomations(
@@ -444,7 +527,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         );
         updatedBoard = newBoardState;
         if (executedRules.length > 0) {
-          get().setToastMessage(`⚡ Butler: Executed "${executedRules[0].ruleName}"`);
+          get().setToastMessage(`Executed: "${executedRules[0].ruleName}"`);
         }
       }
 
@@ -651,7 +734,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     );
 
     if (executedRules.length > 0) {
-      get().setToastMessage(`⚡ Butler triggered: ${buttonLabel}`);
+      get().setToastMessage(`Triggered: ${buttonLabel}`);
       const updatedWorkspace = {
         ...state.workspace,
         boards: state.workspace.boards.map((b) => (b.id === newBoardState.id ? newBoardState : b))
@@ -679,4 +762,3 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     });
   }
 }));
-
