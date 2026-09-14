@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { WorkspaceNode, BoardNode, CardNode, ContentBlock, ColumnNode, AutomationRule, ViewMode, UserAccount } from '@/types';
-import { INITIAL_WORKSPACE } from '@/lib/seedData';
+import { EMPTY_WORKSPACE } from '@/lib/seedData';
 import { evaluateAndRunAutomations } from '@/lib/automationEngine';
 
 interface WorkspaceState {
@@ -12,7 +12,7 @@ interface WorkspaceState {
   viewMode: ViewMode;
   searchQuery: string;
   isAutomationModalOpen: boolean;
-  isTemplateModalOpen: boolean;
+  isGitHubModalOpen: boolean;
   toastMessage: string | null;
 
   // Auth Actions
@@ -20,17 +20,19 @@ interface WorkspaceState {
   register: (name: string, email: string, password?: string) => boolean;
   logout: () => void;
 
-  // Actions
+  // UI Actions
   setActiveBoard: (boardId: string) => void;
   setActiveCard: (cardId: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
   setAutomationModalOpen: (open: boolean) => void;
-  setTemplateModalOpen: (open: boolean) => void;
+  setGitHubModalOpen: (open: boolean) => void;
   setToastMessage: (msg: string | null) => void;
 
   // Workspace & Board CRUD
   createBoard: (title: string, description?: string, icon?: string) => void;
+  createBlankBoard: () => void;
+  importGitHubRepo: (repoName: string, description: string, issues: any[]) => void;
   deleteBoard: (boardId: string) => void;
   updateBoardTitle: (boardId: string, title: string) => void;
   
@@ -63,9 +65,9 @@ interface WorkspaceState {
   importWorkspaceData: (data: WorkspaceNode) => void;
 }
 
-const STORAGE_KEY = 'notion_board_workspace_v2';
-const USERS_STORAGE_KEY = 'notion_board_users_v2';
-const SESSION_KEY = 'notion_board_session_user_v2';
+const STORAGE_KEY = 'notion_board_workspace_v3';
+const USERS_STORAGE_KEY = 'notion_board_users_v3';
+const SESSION_KEY = 'notion_board_session_user_v3';
 
 const DEFAULT_USERS: UserAccount[] = [
   {
@@ -104,7 +106,7 @@ const getInitialWorkspace = (): WorkspaceNode => {
       if (saved) return JSON.parse(saved);
     } catch {}
   }
-  return INITIAL_WORKSPACE;
+  return EMPTY_WORKSPACE;
 };
 
 const saveToLocalStorage = (workspace: WorkspaceNode) => {
@@ -139,12 +141,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   currentUser: getStoredSession(),
   users: getStoredUsers(),
   workspace: getInitialWorkspace(),
-  activeBoardId: getInitialWorkspace().active_board_id || 'board-sprint',
+  activeBoardId: getInitialWorkspace().active_board_id || 'board-welcome',
   activeCardId: null,
   viewMode: 'board',
   searchQuery: '',
   isAutomationModalOpen: false,
-  isTemplateModalOpen: false,
+  isGitHubModalOpen: false,
   toastMessage: null,
 
   login: (email, password) => {
@@ -199,7 +201,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setAutomationModalOpen: (open) => set({ isAutomationModalOpen: open }),
-  setTemplateModalOpen: (open) => set({ isTemplateModalOpen: open }),
+  setGitHubModalOpen: (open) => set({ isGitHubModalOpen: open }),
   setToastMessage: (msg) => {
     set({ toastMessage: msg });
     if (msg) {
@@ -237,6 +239,116 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       };
       saveToLocalStorage(updated);
       return { workspace: updated, activeBoardId: id };
+    });
+  },
+
+  createBlankBoard: () => {
+    const id = `board-${Date.now()}`;
+    const newBoard: BoardNode = {
+      id,
+      title: 'Untitled Board',
+      description: 'Clean board',
+      icon: '📋',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      columns: [
+        { id: `col-${Date.now()}-1`, title: 'To Do', color: '#64748b', card_ids: [] },
+        { id: `col-${Date.now()}-2`, title: 'In Progress', color: '#3b82f6', card_ids: [] },
+        { id: `col-${Date.now()}-3`, title: 'Done', color: '#10b981', card_ids: [] }
+      ],
+      cards: {},
+      automations: []
+    };
+
+    set((state) => {
+      const updated = {
+        ...state.workspace,
+        boards: [...state.workspace.boards, newBoard],
+        active_board_id: id
+      };
+      saveToLocalStorage(updated);
+      return { workspace: updated, activeBoardId: id };
+    });
+  },
+
+  importGitHubRepo: (repoName, description, issues) => {
+    const boardId = `board-gh-${Date.now()}`;
+    const colTodoId = `col-gh-todo-${Date.now()}`;
+    const colProgressId = `col-gh-prog-${Date.now()}`;
+    const colDoneId = `col-gh-done-${Date.now()}`;
+
+    const cards: Record<string, CardNode> = {};
+    const todoCardIds: string[] = [];
+
+    issues.forEach((issue: any, index: number) => {
+      const cardId = `card-gh-${issue.id || index}`;
+      todoCardIds.push(cardId);
+
+      const labels = (issue.labels || []).map((l: any) => typeof l === 'string' ? l : l.name);
+      const assignees = (issue.assignees || []).map((a: any) => a.login);
+      if (issue.user?.login && assignees.length === 0) {
+        assignees.push(issue.user.login);
+      }
+
+      cards[cardId] = {
+        id: cardId,
+        column_id: colTodoId,
+        title: `#${issue.number || index + 1} ${issue.title}`,
+        description: issue.body ? issue.body.slice(0, 150) + (issue.body.length > 150 ? '...' : '') : undefined,
+        created_at: issue.created_at || new Date().toISOString(),
+        updated_at: issue.updated_at || new Date().toISOString(),
+        properties: {
+          status: 'Open Issues',
+          priority: labels.some((l: string) => l.toLowerCase().includes('urgent') || l.toLowerCase().includes('bug')) ? 'High' : 'Medium',
+          assignees,
+          tags: labels.slice(0, 3),
+          cover_color: '#3b82f6'
+        },
+        blocks: [
+          {
+            id: `b-gh-${Date.now()}-1`,
+            type: 'heading_2',
+            content: 'Issue Description'
+          },
+          {
+            id: `b-gh-${Date.now()}-2`,
+            type: 'paragraph',
+            content: issue.body || 'No description provided on GitHub.'
+          },
+          {
+            id: `b-gh-${Date.now()}-3`,
+            type: 'todo',
+            content: 'Review and triage issue',
+            checked: false
+          }
+        ]
+      };
+    });
+
+    const newBoard: BoardNode = {
+      id: boardId,
+      title: repoName,
+      description,
+      icon: '🐙',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      columns: [
+        { id: colTodoId, title: 'Open Issues', color: '#3b82f6', card_ids: todoCardIds },
+        { id: colProgressId, title: 'In Progress', color: '#8b5cf6', card_ids: [] },
+        { id: colDoneId, title: 'Closed / Resolved', color: '#10b981', card_ids: [] }
+      ],
+      cards,
+      automations: []
+    };
+
+    set((state) => {
+      const updated = {
+        ...state.workspace,
+        boards: [...state.workspace.boards, newBoard],
+        active_board_id: boardId
+      };
+      saveToLocalStorage(updated);
+      return { workspace: updated, activeBoardId: boardId };
     });
   },
 
@@ -745,10 +857,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   resetToDefaults: () => {
-    saveToLocalStorage(INITIAL_WORKSPACE);
+    saveToLocalStorage(EMPTY_WORKSPACE);
     set({
-      workspace: INITIAL_WORKSPACE,
-      activeBoardId: INITIAL_WORKSPACE.active_board_id,
+      workspace: EMPTY_WORKSPACE,
+      activeBoardId: EMPTY_WORKSPACE.active_board_id,
       activeCardId: null
     });
   },
@@ -757,7 +869,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     saveToLocalStorage(data);
     set({
       workspace: data,
-      activeBoardId: data.active_board_id || data.boards[0]?.id || 'board-sprint',
+      activeBoardId: data.active_board_id || data.boards[0]?.id || 'board-welcome',
       activeCardId: null
     });
   }

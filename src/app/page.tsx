@@ -9,14 +9,15 @@ import { TableView } from '@/components/views/TableView';
 import { ListView } from '@/components/views/ListView';
 import { CardDrawer } from '@/components/card-drawer/CardDrawer';
 import { AutomationModal } from '@/components/automation/AutomationModal';
+import { GitHubImportModal } from '@/components/github/GitHubImportModal';
 import { AuthModal } from '@/components/auth/AuthModal';
 
 export default function Home() {
-  const { currentUser, viewMode, toastMessage } = useWorkspaceStore();
+  const { currentUser, viewMode, toastMessage, isGitHubModalOpen, setGitHubModalOpen } = useWorkspaceStore();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#191919] text-[#ebebeb] antialiased">
-      {/* Authentication Gateway (Login & Registration) */}
+      {/* Authentication Gateway */}
       {!currentUser ? (
         <AuthModal />
       ) : (
@@ -40,6 +41,12 @@ export default function Home() {
 
           {/* Automations Modal */}
           <AutomationModal />
+
+          {/* GitHub Database Board Importer Modal */}
+          <GitHubImportModal
+            isOpen={isGitHubModalOpen}
+            onClose={() => setGitHubModalOpen(false)}
+          />
         </>
       )}
 

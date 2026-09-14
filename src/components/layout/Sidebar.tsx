@@ -10,7 +10,9 @@ import {
   Upload, 
   RotateCcw,
   LogOut,
-  User as UserIcon
+  GitBranch,
+  HelpCircle,
+  FolderPlus
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -21,8 +23,10 @@ export const Sidebar: React.FC = () => {
     activeBoardId, 
     setActiveBoard, 
     createBoard, 
+    createBlankBoard,
     deleteBoard,
     setAutomationModalOpen,
+    setGitHubModalOpen,
     resetToDefaults,
     importWorkspaceData,
     setToastMessage
@@ -102,14 +106,16 @@ export const Sidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
         <div>
           <div className="flex items-center justify-between px-2 mb-1 text-[11px] font-medium text-[#777777]">
-            <span>BOARDS</span>
-            <button
-              onClick={() => setIsNewBoardOpen(!isNewBoardOpen)}
-              className="p-0.5 hover:bg-[#282828] rounded text-[#777777] hover:text-[#d4d4d4] transition"
-              title="Add Board"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
+            <span>BOARDS & DATABASES</span>
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => setIsNewBoardOpen(!isNewBoardOpen)}
+                className="p-0.5 hover:bg-[#282828] rounded text-[#777777] hover:text-[#d4d4d4] transition"
+                title="Add Board"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {isNewBoardOpen && (
@@ -191,6 +197,25 @@ export const Sidebar: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Quick Actions for Blank Board & GitHub */}
+          <div className="pt-2 space-y-1">
+            <button
+              onClick={createBlankBoard}
+              className="w-full flex items-center gap-2 px-2 py-1 text-xs text-[#777777] hover:text-[#cccccc] hover:bg-[#232323] rounded transition"
+            >
+              <FolderPlus className="w-3.5 h-3.5" />
+              <span>+ Blank Board</span>
+            </button>
+
+            <button
+              onClick={() => setGitHubModalOpen(true)}
+              className="w-full flex items-center gap-2 px-2 py-1 text-xs text-[#777777] hover:text-[#2383e2] hover:bg-[#232323] rounded transition"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              <span>+ GitHub Database Board</span>
+            </button>
+          </div>
         </div>
 
         {/* Automations */}
@@ -213,10 +238,10 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={resetToDefaults}
           className="p-1 hover:bg-[#262626] rounded text-[#777777] hover:text-[#bbbbbb] transition flex items-center gap-1 text-[11px]"
-          title="Reset default data"
+          title="Reset Tutorial"
         >
-          <RotateCcw className="w-3 h-3" />
-          <span>Reset</span>
+          <HelpCircle className="w-3 h-3" />
+          <span>Tutorial</span>
         </button>
 
         <div className="flex items-center gap-1">
